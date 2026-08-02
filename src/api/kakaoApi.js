@@ -5,10 +5,8 @@ const rest_api_key =
   import.meta.env.MODE === "development" // 실행 환경이
     ? import.meta.env.VITE_KAKAO_REST_API_KEY_LOCAL
     : import.meta.env.VITE_KAKAO_REST_API_KEY;
-const redirect_uri =
-  import.meta.env.MODE === "development" // 실행 환경이
-    ? "http://localhost:5173/member/kakao"
-    : "https://gongchaek.site/member/kakao";
+const appUrl = (import.meta.env.VITE_APP_URL || window.location.origin).replace(/\/$/, "");
+const redirect_uri = `${appUrl}/member/kakao`;
 const client_secret =
   import.meta.env.MODE === "development"
     ? import.meta.env.VITE_KAKAO_CLIENT_SECRET_LOCAL

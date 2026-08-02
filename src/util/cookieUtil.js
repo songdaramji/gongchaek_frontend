@@ -23,11 +23,8 @@ export const removeCookie = (name, path = "/") => {
 };
 
 export const removeKakaoCookie = () => {
-  const redirectUri = encodeURIComponent(
-    import.meta.env.MODE === "development" // 실행 환경이
-      ? "http://localhost:5173/"
-      : "https://gongchaek.site/"
-  );
+  const appUrl = (import.meta.env.VITE_APP_URL || window.location.origin).replace(/\/$/, "");
+  const redirectUri = encodeURIComponent(`${appUrl}/`);
   const kakaoLogoutUrl = `https://kauth.kakao.com/oauth/logout?client_id=${
     import.meta.env.MODE === "development"
       ? import.meta.env.VITE_KAKAO_REST_API_KEY_LOCAL
