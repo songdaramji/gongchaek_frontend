@@ -20,6 +20,12 @@ function KakaoRedirectPage(props) {
         console.log("payload: ", payload);
         console.log("resultAction: ", resultAction);
 
+        if (kakaoLoginAsync.rejected.match(resultAction) || !payload) {
+          console.error("카카오 로그인 실패:", resultAction.error);
+          navigate("/member/login", { replace: true });
+          return;
+        }
+
         if (payload.needsSignup) {
           // 신규 회원인 경우 회원가입 페이지로 이동
           navigate("/member/socialSignup", {
