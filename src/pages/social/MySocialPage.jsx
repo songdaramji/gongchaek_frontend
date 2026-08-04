@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  getMySocialInfo,
   getSearchUserList,
   patchFollow,
 } from "../../api/social/mySocialApi";
@@ -11,35 +10,35 @@ import SocialProfile from "../../components/social/SocialProfile";
 import SearchBar from "../../components/commons/SearchBar";
 import ListNotice from "../../components/commons/ListNotice";
 import SocialList from "../../components/social/SocialList";
+import useCustomLogin from "../../hooks/useCustomLogin";
+import { useMySocialProfile } from "../../hooks/useProfileQueries";
 
 // 소셜 메인 페이지(내 소셜)
 const SocialMainPage = () => {
   const navigate = useNavigate();
+  const { loginState } = useCustomLogin();
   const scrollPositionRef = useRef(0); // 스크롤 위치를 저장하기 위한 ref
-  const [mySocialProfile, setMySocialProfile] = useState([]); // 내 소셜 프로필 정보 상태
+  const { data: mySocialProfile = {}, refetch: refetchMySocialProfile } =
+    useMySocialProfile(loginState);
   const [searchUserList, setSearchUserList] = useState({
     content: [],
     hasNext: true,
   }); // 모든 유저 검색 목록 상태
-  const mySocialSearch = sessionStorage.getItem("mySocialSearch");
   const [search, setSearch] = useState(""); // 전체 검색 닉네임 검색어 상태
   const [isLoading, setIsLoading] = useState(false);
-  const [refresh, setRefresh] = useState(false);
-
-  // 내 소셜 프로필 정보
-  useEffect(() => {
-    const fetchData = async () => {
-      const mysocialInfo = await fetchMySocialInfo();
-      setMySocialProfile(mysocialInfo); // 가져온 데이터를 상태로 설정
-    };
-    fetchData();
-  }, [refresh]);
 
   // 검색어 입력 시 유저 검색 목록 API 호출
   useEffect(() => {
     const fetchData = async () => {
-      const searchUserList = await fetchSearchUserList(search);
-      setSearchUserList(searchUserList); // 가져온 데이터를 상태로 설정
+      try {
+        setIsLoading(true);
+        const response = await getSearchUserList(search);
+        setSearchUserList(response.data.data);
+      } catch (error) {
+        console.error(error, "유저 검색 목록을 불러오는 데 실패하였습니다");
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchData();
     return () => {
@@ -48,45 +47,11 @@ const SocialMainPage = () => {
     };
   }, [search]);
 
-  // 내 소셜 정보 API
-  const fetchMySocialInfo = async () => {
-    try {
-      setIsLoading(true);
-      const response = await getMySocialInfo();
-      console.log("***** 내 소셜 정보 :", response.data); // 여기서 응답 데이터 출력
-      setIsLoading(false);
-      return response.data; // 응답 반환
-    } catch (error) {
-      console.error(error, "내 소셜 정보를 불러오는 데 실패하였습니다");
-      setIsLoading(false);
-      return error;
-    }
-  };
-
-  // 유저 검색 목록 API
-  const fetchSearchUserList = async () => {
-    try {
-      setIsLoading(true);
-      const response = await getSearchUserList(search);
-      console.log(
-        "*****유저 검색 목록(response.data.data):",
-        response.data.data
-      ); // 여기서 응답 데이터 출력
-      setIsLoading(false);
-      return response.data.data; // 응답 반환
-    } catch (error) {
-      console.error(error, "유저 검색 목록을 불러오는 데 실패하였습니다");
-      setIsLoading(false);
-      return error;
-    }
-  };
-
   // 팔로우 상태 변경 API 호출
   const fetchPatchFollow = async (targetMemberId) => {
     try {
       const response = await patchFollow(targetMemberId);
       console.log("*****팔로우 patchFollow :", response.data);
-      setRefresh((prev) => !prev);
       // 소셜 리스트 업데이트
       setSearchUserList((prevList) => ({
         ...prevList,
@@ -98,7 +63,7 @@ const SocialMainPage = () => {
       }));
 
       // 팔로우/언팔로우 후 최신 프로필 정보 업데이트
-      await fetchMySocialInfo();
+      await refetchMySocialProfile();
     } catch (error) {
       console.error("팔로우 상태를 변경하는 데 실패하였습니다:", error);
     }

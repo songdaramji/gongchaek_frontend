@@ -6,16 +6,17 @@ import ProfileBox from "../../components/settings/ProfileBox";
 import { useNavigate } from "react-router-dom";
 import ProfileModifyingModal from "../../components/modal/settings/ProfileModifyingModal";
 import useCustomLogin from "../../hooks/useCustomLogin";
-import { getMyInformation } from "../../api/settings/myPageApi";
 import { useSelector } from "react-redux";
+import { useMyInformation } from "../../hooks/useProfileQueries";
 
 const SettingsPage = () => {
   const { loginState } = useCustomLogin();
   const navigate = useNavigate();
 
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [myInfo, setMyInfo] = useState({});
   const refresh = useSelector((state) => state.refresh.refresh);
+  const { data: myInfo = {}, refetch: refetchMyInfo } =
+    useMyInformation(loginState);
 
   useEffect(() => {
     // roles에 ADMIN이 포함되어 있는지 확인하고 리다이렉션
@@ -24,20 +25,9 @@ const SettingsPage = () => {
     }
   }, [loginState.roles, navigate]);
 
-  // 초기 정보 로드
   useEffect(() => {
-    fetchMyInfo();
-  }, [loginState, refresh]);
-
-  const fetchMyInfo = async () => {
-    try {
-      const res = await getMyInformation();
-      console.log("res at page: ", res);
-      setMyInfo(res);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    if (refresh) refetchMyInfo();
+  }, [refresh, refetchMyInfo]);
 
   const handleProfileModal = (boolean) => {
     setIsProfileModalOpen(boolean);

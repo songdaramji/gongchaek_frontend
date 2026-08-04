@@ -11,7 +11,9 @@ const ProfileBox = ({ openModal, myInfo, isAdmin = false }) => {
     <div className="w-full flex items-center bg-white border border-unddisabled rounded-2xl px-3 shadow-md h-24">
       <div className="w-full flex items-center gap-3">
         <div className=" h-16 flex justify-center items-center">
-          {isAdmin || myInfo?.profileImage === "defaultProfileImage.jpg" ? (
+          {isAdmin ||
+          !myInfo?.profileImage ||
+          myInfo.profileImage === "defaultProfileImage.jpg" ? (
             <PortraitPlaceholder iconSize={36} circleSize={16} />
           ) : (
             <div className="w-16 h-16 rounded-full">
