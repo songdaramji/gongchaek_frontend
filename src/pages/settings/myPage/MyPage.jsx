@@ -72,9 +72,9 @@ const MyPage = () => {
   };
 
   const handleLogout = () => {
-    doLogout(myInfo.social);
+    doLogout(Boolean(myInfo?.social));
     setOpenLogoutModal(false);
-    navigate("/", { replace: true });
+    navigate("/member/login", { replace: true });
   };
 
   const handleUnregister = async () => {

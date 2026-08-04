@@ -24,7 +24,7 @@ export const removeCookie = (name, path = "/") => {
 
 export const removeKakaoCookie = () => {
   const appUrl = (import.meta.env.VITE_APP_URL || window.location.origin).replace(/\/$/, "");
-  const redirectUri = encodeURIComponent(`${appUrl}/`);
+  const redirectUri = encodeURIComponent(`${appUrl}/member/login`);
   const kakaoLogoutUrl = `https://kauth.kakao.com/oauth/logout?client_id=${
     import.meta.env.MODE === "development"
       ? import.meta.env.VITE_KAKAO_REST_API_KEY_LOCAL

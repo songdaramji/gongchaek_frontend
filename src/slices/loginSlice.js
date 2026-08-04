@@ -78,11 +78,11 @@ const loginSlice = createSlice({
 
       return action.payload;
     },
-    logout: (social = false) => {
+    logout: (state, action) => {
       console.log("logout.....");
 
       removeCookie("member");
-      if (social) removeKakaoCookie();
+      if (action.payload) removeKakaoCookie();
 
       return { ...initState };
     },

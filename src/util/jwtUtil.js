@@ -1,8 +1,15 @@
 import axios from "axios";
-import { getCookie, setCookie } from "./cookieUtil";
+import { getCookie, removeCookie, setCookie } from "./cookieUtil";
 import { API_SERVER_HOST } from "../api/commonApi";
 
 const jwtAxios = axios.create();
+
+const clearSessionAndMoveToLogin = () => {
+  removeCookie("member");
+  if (window.location.pathname !== "/member/login") {
+    window.location.replace("/member/login");
+  }
+};
 
 const refreshJWT = async (accessToken, refreshToken) => {
   const host = API_SERVER_HOST;
@@ -28,6 +35,7 @@ const beforeReq = (config) => {
 
   if (!memberInfo) {
     console.log("Member NOT FOUND");
+    clearSessionAndMoveToLogin();
     return Promise.reject({ response: { data: { error: "REQUIRE_LOGIN" } } });
   }
 
@@ -80,9 +88,12 @@ const responseFail = async (err) => {
         return await axios(originalRequest);
       } catch (refreshError) {
         console.error("토큰 갱신 실패:", refreshError);
+        clearSessionAndMoveToLogin();
         return Promise.reject(refreshError);
       }
     }
+
+    clearSessionAndMoveToLogin();
   }
 
   return Promise.reject(err); // 다른 에러는 그대로 전달
