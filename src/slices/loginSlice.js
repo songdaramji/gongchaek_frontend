@@ -38,16 +38,8 @@ export const kakaoLoginAsync = createAsyncThunk(
     console.log("result: ", result);
 
     if (result.result === "exists") {
-      // 기존 회원인 경우 자동 로그인 처리
-      const loginResponse = await loginPost({
-        username: result.member.username,
-        password: "pw_" + result.member.username,
-      });
-
-      console.log("loginResponse : {}", loginResponse);
-
       return {
-        ...loginResponse,
+        ...result.member,
         loginType: "kakao",
         kakaoAccessToken: result.member.kakaoAccessToken,
         kakaoRefreshToken: result.member.kakaoRefreshToken,

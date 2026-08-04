@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { getKakaoLoginLink } from "../../api/kakaoApi";
+import { getKakaoLoginLink, wakeKakaoBackend } from "../../api/kakaoApi";
 import { PiChat, PiChatCircleFill } from "react-icons/pi";
 
 const link = getKakaoLoginLink;
@@ -7,6 +7,7 @@ const link = getKakaoLoginLink;
 const KakaoLoginComponent = (props) => {
   const handleKakaoLogin = (e) => {
     e.preventDefault();
+    wakeKakaoBackend();
     const kakaoAuthUrl = getKakaoLoginLink();
     window.location.href = kakaoAuthUrl;
   };

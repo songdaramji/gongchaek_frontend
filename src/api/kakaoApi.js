@@ -17,16 +17,30 @@ export const getKakaoLoginLink = () => {
 export const getToken = async (authCode) => {
   const res = await axios.post(`${API_SERVER_HOST}/api/member/kakao/token`, null, {
     params: { code: authCode, redirectUri: redirect_uri },
+    timeout: 90000,
   });
   return res.data;
 };
 
 export const getMemberWithToken = async (accessToken, refreshToken) => {
-  const res = await axios.get(`${API_SERVER_HOST}/api/member/kakao`, {
-    params: {
-      accessToken: accessToken, // 파라미터 이름을 정확히 일치시킴.
-      refreshToken: refreshToken,
-    },
-  });
-  return res.data;
+  const request = () =>
+    axios.get(`${API_SERVER_HOST}/api/member/kakao`, {
+      params: { accessToken, refreshToken },
+      timeout: 30000,
+    });
+  try {
+    return (await request()).data;
+  } catch (error) {
+    if (error.code !== "ECONNABORTED" && error.code !== "ERR_NETWORK") throw error;
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    return (await request()).data;
+  }
+};
+
+export const wakeKakaoBackend = () => {
+  fetch(`${API_SERVER_HOST}/api/health`, {
+    method: "GET",
+    mode: "cors",
+    keepalive: true,
+  }).catch(() => {});
 };
