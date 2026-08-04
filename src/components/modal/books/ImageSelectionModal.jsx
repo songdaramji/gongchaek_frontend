@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import Tesseract, { createWorker } from "tesseract.js";
+import React, { useRef, useState } from "react";
+import Tesseract from "tesseract.js";
 
 const ImageSelectionModal = ({ source, onClose, onExtractedText }) => {
   const imgRef = useRef();
@@ -8,23 +8,32 @@ const ImageSelectionModal = ({ source, onClose, onExtractedText }) => {
   const [isSelecting, setIsSelecting] = useState(false);
   const [startPosition, setStartPosition] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const preprocessImage = (image, selection) => {
     const croppedCanvas = document.createElement("canvas");
-    croppedCanvas.width = selection.width;
-    croppedCanvas.height = selection.height;
+    const scaleX = image.naturalWidth / image.clientWidth;
+    const scaleY = image.naturalHeight / image.clientHeight;
+    const sourceX = selection.x * scaleX;
+    const sourceY = selection.y * scaleY;
+    const sourceWidth = selection.width * scaleX;
+    const sourceHeight = selection.height * scaleY;
+    const outputScale = Math.min(2, Math.max(1, 1600 / sourceWidth));
+
+    croppedCanvas.width = sourceWidth * outputScale;
+    croppedCanvas.height = sourceHeight * outputScale;
     const croppedCtx = croppedCanvas.getContext("2d");
 
     croppedCtx.drawImage(
       image,
-      selection.x,
-      selection.y,
-      selection.width,
-      selection.height,
+      sourceX,
+      sourceY,
+      sourceWidth,
+      sourceHeight,
       0,
       0,
-      selection.width,
-      selection.height
+      croppedCanvas.width,
+      croppedCanvas.height
     );
 
     // console.log("이미지 잘림 완료:", croppedCanvas);
@@ -94,60 +103,72 @@ const ImageSelectionModal = ({ source, onClose, onExtractedText }) => {
     });
   };
 
-  const handleEnd = async () => {
+  const handleEnd = () => {
     setIsSelecting(false);
+  };
 
-    if (selection && imgRef.current) {
-      const image = new Image();
-      image.src = source;
+  const handleRecognize = async () => {
+    if (!selection || selection.width < 10 || selection.height < 10) return;
 
-      image.onload = async () => {
-        const processedCanvas = preprocessImage(image, selection);
-        setIsProcessing(true);
-
-        try {
-          const {
-            data: { text },
-          } = await Tesseract.recognize(processedCanvas, "kor", {
-            logger: (m) => console.log("진행 상태:", m),
-            //langPath: "/tessdata",
-          });
-          onExtractedText(text);
-        } catch (error) {
-          console.error("텍스트 추출 오류:", error);
-          onExtractedText("텍스트 추출에 실패했습니다.");
-        } finally {
-          setIsProcessing(false);
-          onClose();
-        }
-      };
+    setIsProcessing(true);
+    setProgress(0);
+    try {
+      const processedCanvas = preprocessImage(imgRef.current, selection);
+      const {
+        data: { text },
+      } = await Tesseract.recognize(processedCanvas, "kor+eng", {
+        logger: ({ status, progress: nextProgress }) => {
+          if (status === "recognizing text") setProgress(nextProgress);
+        },
+      });
+      const normalizedText = text
+        .replace(/\s*\n\s*/g, " ")
+        .replace(/\s{2,}/g, " ")
+        .trim()
+        .slice(0, 200);
+      if (!normalizedText) throw new Error("인식된 글자가 없습니다.");
+      onExtractedText(normalizedText);
+      onClose();
+    } catch (error) {
+      console.error("텍스트 추출 오류:", error);
+      window.alert("글자를 인식하지 못했습니다. 영역을 다시 선택해 주세요.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-      <div className="relative w-full max-w-4xl p-4">
+    <div className="fixed inset-0 z-[60] flex flex-col bg-black bg-opacity-90">
+      <div className="flex items-center justify-between p-4 text-white">
+        <div>
+          <p className="font-bold">구절 영역 선택</p>
+          <p className="text-und12 text-white/70">손가락으로 문장을 둘러싸 주세요.</p>
+        </div>
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 bg-white text-black px-3 py-1 rounded-md"
+          className="rounded-full bg-white/15 px-4 py-2"
           disabled={isProcessing}
         >
           닫기
         </button>
+      </div>
+      <div className="relative flex min-h-0 flex-1 items-center justify-center p-3">
         <div
-          className="relative w-full h-full"
+          className="relative max-h-full max-w-full select-none"
           onMouseDown={handleStart}
           onMouseMove={handleMove}
           onMouseUp={handleEnd}
           onTouchStart={handleStart}
           onTouchMove={handleMove}
           onTouchEnd={handleEnd}
+          style={{ touchAction: "none" }}
         >
           <img
             ref={imgRef}
             src={source}
             alt="Captured"
-            className="w-full h-full object-contain rounded-lg"
+            className="max-h-[70vh] max-w-full rounded-lg object-contain"
+            draggable={false}
           />
           {selection && (
             <div
@@ -157,12 +178,28 @@ const ImageSelectionModal = ({ source, onClose, onExtractedText }) => {
                 left: selection.x,
                 width: selection.width,
                 height: selection.height,
-                border: "2px solid blue",
-                backgroundColor: "rgba(0, 0, 255, 0.2)",
+                border: "2px solid #f59e0b",
+                backgroundColor: "rgba(245, 158, 11, 0.2)",
+                pointerEvents: "none",
               }}
             ></div>
           )}
         </div>
+      </div>
+      <div className="bg-black p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        {isProcessing && (
+          <p className="mb-2 text-center text-und14 text-white">
+            글자를 인식하고 있어요… {Math.round(progress * 100)}%
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={handleRecognize}
+          disabled={!selection || isProcessing}
+          className="h-12 w-full rounded-full bg-undpoint font-bold text-white disabled:bg-unddisabled disabled:text-undtextgray"
+        >
+          {isProcessing ? "인식 중" : "선택한 구절 인식"}
+        </button>
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import {
 } from "../../../api/book/bookMarkApi";
 import TwoButtonModal from "../commons/TwoButtonModal";
 import { useNavigate } from "react-router-dom";
+import BookmarkScanner from "../../myBook/BookmarkScanner";
 
 const BookMarkModal = ({
   modes,
@@ -25,6 +26,7 @@ const BookMarkModal = ({
   const [mark, setMark] = useState(bookmark?.phrase || "");
   const [mode, setMode] = useState(modes || "READ");
   const [isOpenConfirmModal, setIsOpenConfirmModal] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   useEffect(() => {
     if (mark !== "") setIsReady(true);
@@ -139,7 +141,17 @@ const BookMarkModal = ({
               "justify-end"
             } items-center`}
           >
-            {/* {mode === "ADD" && <PiCamera color={"#0c0a09"} size={32} />} */}
+            {(mode === "ADD" || mode === "MODIFY") && (
+              <button
+                type="button"
+                onClick={() => setIsScannerOpen(true)}
+                className="mr-auto flex min-h-11 items-center gap-2 rounded-full bg-undbgsub px-4 text-und14 font-bold text-undclickbrown"
+                aria-label="사진으로 구절 입력"
+              >
+                <PiCamera size={23} />
+                사진으로 입력
+              </button>
+            )}
 
             <p className="text-und14 text-end text-undtextgray justify-end">
               {"("}
@@ -212,6 +224,15 @@ const BookMarkModal = ({
             해당 책갈피를 정말로 삭제하시겠습니까?
           </p>
         </TwoButtonModal>
+      )}
+      {isScannerOpen && (
+        <BookmarkScanner
+          onCancel={() => setIsScannerOpen(false)}
+          onSuccessExtract={(text) => {
+            setMark(text);
+            setIsScannerOpen(false);
+          }}
+        />
       )}
     </SlrModalLayout>
   );

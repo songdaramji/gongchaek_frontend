@@ -1,0 +1,8 @@
+{
+  "appId": "com.gongchaek.app",
+  "appName": "gongchaek",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}
