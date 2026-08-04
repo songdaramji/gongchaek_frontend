@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import SlrModalLayout from "../../../layouts/SlrModalLayout";
 import BookmarkPageInput from "../../bookmark/BookmarkPageInput";
-import { PiCamera } from "react-icons/pi";
+import { PiBarcode } from "react-icons/pi";
 import BookmarkMarkInput from "../../bookmark/BookmarkMarkInput";
 import {
   addBookmark,
@@ -142,15 +142,24 @@ const BookMarkModal = ({
             } items-center`}
           >
             {(mode === "ADD" || mode === "MODIFY") && (
-              <button
-                type="button"
-                onClick={() => setIsScannerOpen(true)}
-                className="mr-auto flex min-h-11 items-center gap-2 rounded-full bg-undbgsub px-4 text-und14 font-bold text-undclickbrown"
-                aria-label="사진으로 구절 입력"
-              >
-                <PiCamera size={23} />
-                사진으로 입력
-              </button>
+              <div className="mr-auto flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsScannerOpen(true)}
+                  className="flex size-11 items-center justify-center rounded-full border border-unddisabled bg-white shadow-sm"
+                  aria-label="카메라로 책 구절 인식"
+                  title="카메라로 책 구절 인식"
+                >
+                  <PiBarcode size={28} color="#78716C" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsScannerOpen(true)}
+                  className="text-start text-und14 font-bold text-undclickbrown"
+                >
+                  사진으로 구절 인식
+                </button>
+              </div>
             )}
 
             <p className="text-und14 text-end text-undtextgray justify-end">
