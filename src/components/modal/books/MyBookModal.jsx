@@ -39,7 +39,10 @@ const MyBookModal = ({ mode, onClose, state = "READING", book = initData }) => {
     endDate: mode === "ADD" ? "today" : book?.endDate ?? "today",
     oneLineReview: mode === "ADD" ? "" : book?.oneLineReview ?? "",
     currentPage: mode === "ADD" ? 0 : book?.currentPage ?? 0,
-    itemPage: mode === "ADD" ? book.subInfo.itemPage : book.itemPage,
+    itemPage:
+      mode === "ADD"
+        ? book?.subInfo?.itemPage ?? book?.itemPage ?? 0
+        : book?.itemPage ?? 0,
     updateCount: mode === "ADD" ? 0 : book.updateCount,
   });
 
@@ -115,12 +118,12 @@ const MyBookModal = ({ mode, onClose, state = "READING", book = initData }) => {
         author: book.author,
         link: book.link,
         cover: book.cover,
-        fullDescription: book.fullDescription,
+        fullDescription: book.fullDescription || book.description || "",
         fullDescription2: book.fullDescription2,
         publisher: book.publisher,
         categoryName: book.categoryName,
         customerReviewRank: book.customerReviewRank,
-        itemPage: book.subInfo.itemPage,
+        itemPage: book?.subInfo?.itemPage ?? book?.itemPage ?? 0,
       },
       bookStatusRequestDTO: bookInput,
     };
@@ -157,7 +160,7 @@ const MyBookModal = ({ mode, onClose, state = "READING", book = initData }) => {
       const result =
         mode === "ADD" ? await fetchAddBook() : await fetchModifyBook();
 
-      if (result.data.result === "success") {
+      if (result?.data?.result === "success") {
         handleConfirmModalOpen();
         setId(result.data.data.id);
       }
