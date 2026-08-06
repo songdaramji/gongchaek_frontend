@@ -9,23 +9,14 @@ import useBookStatus from "../../hooks/useBookStatus";
 import TwoButtonModal from "../../components/modal/commons/TwoButtonModal";
 import MyBookModal from "../../components/modal/books/MyBookModal";
 import BookCustomInformation from "../../components/book/BookCustomInformation";
-
-const initData = {
-  status: "",
-  myRating: 0,
-  oneLineReview: "",
-  currentPage: 0,
-  updateCount: 0,
-  startDate: "0000-00-00",
-  endDate: "0000-00-00",
-};
+import LoadingPage from "../LoadingPage";
 
 const MyBookDetailPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { bookId } = useParams();
   const { getStatusInKorean } = useBookStatus();
-  const [book, setBook] = useState([]);
+  const [book, setBook] = useState(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [modifyModalOpen, setModifyModalOpen] = useState(false);
   const [refresh, setRefresh] = useState(false);
@@ -93,6 +84,14 @@ const MyBookDetailPage = () => {
     setModifyModalOpen(false);
     setRefresh((prev) => !prev);
   };
+
+  if (!book) {
+    return (
+      <BasicLayout>
+        <LoadingPage />
+      </BasicLayout>
+    );
+  }
 
   return (
     <BasicLayout>

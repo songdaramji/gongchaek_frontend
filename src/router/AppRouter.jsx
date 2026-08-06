@@ -8,10 +8,12 @@ import SettingsRouter from "./SettingsRouter";
 import AdminRouter from "./AdminRouter";
 import MainPage from "../pages/MainPage";
 import { AuthContainer } from "../components/auth/AuthenticationWrapperComponent";
+import CoreRoutePreloader from "../components/auth/CoreRoutePreloader";
 
 const AppRouter = () => {
   return (
     <BrowserRouter>
+      <CoreRoutePreloader />
       <AuthContainer>
         <Routes>
           <Route path="/" element={<MainPage />} />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getForums } from "../../api/forum/forumApi";
 import useForumStatus from "../../hooks/useForumStatus";
@@ -23,7 +23,6 @@ const ForumMainPage = () => {
   const { getStatusInEnglish } = useForumStatus();
   const { state } = location; // 기존 검색 상태
 
-  const scrollPositionRef = useRef(0); // 스크롤 위치를 저장하기 위한 ref
   const [search, setSearch] = useState(prevSearch || ""); // 검색어 상태
   const [activeTab, setActiveTab] = useState(
     prevActiveTab || "진행 중" //
@@ -32,12 +31,11 @@ const ForumMainPage = () => {
   const [sort, setSort] = useState(prevSort || "최신순");
   const option1 = "최신순"; // 정렬 옵션1 지정
   const option2 = "오래된 순"; // 정렬 옵션2 지정
-  const [sortOption, setSortOption] = useState(state?.sortOption || option1); // 정렬 기본값 설정
   const [lastId, setLastId] = useState(null);
   const [hasNext, setHasNext] = useState(false);
   const [totalElements, setTotalElements] = useState(state?.totalElements || 0); // 총 검색 결과 수 상태
   const [isScrolled, setIsScrolled] = useState(false); // 스크롤 상태
-  const [loading, setLoading] = useState(false); // 로딩 상태
+  const [loading, setLoading] = useState(true); // 로딩 상태
   const [forums, setForums] = useState(state?.forums || []);
 
   const tabRef = useRef(null); // 탭
@@ -202,7 +200,7 @@ const ForumMainPage = () => {
               onChange={handleSort}
               option1={option1}
               option2={option2}
-              activeOption={sortOption}
+              activeOption={sort}
             />
           </div>
         )}
@@ -216,9 +214,9 @@ const ForumMainPage = () => {
           }
           onlyTop={false}
         />
-      ) : (
+      ) : !loading ? (
         <ScrollActionButtons onlyTop={true} />
-      )}
+      ) : null}
       {forums && forums.length > 0 ? (
         <div className="px-6 pt-52 py-20 flex justify-center">
           <ForumList forums={forums} onCardClick={handleCardClick} />

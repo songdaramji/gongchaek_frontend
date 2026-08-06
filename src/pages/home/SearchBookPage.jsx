@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getSearchBookList } from "../../api/home/searchBookApi";
 import BasicLayout from "../../layouts/BasicLayout";
@@ -218,7 +218,7 @@ const SearchBookPage = () => {
           )}
         </div>
         {/* 검색 결과가 없을 때 공지 표시 */}
-        {searchKeyword && totalResults === 0 && (
+        {searchKeyword && !isLoading && totalResults === 0 && (
           <div className="w-full h-full px-6 flex justify-center items-center">
             <ListNotice type="noResult" />
           </div>

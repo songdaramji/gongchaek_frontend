@@ -32,7 +32,7 @@ const MyBookListPage = () => {
   const [totalElements, setTotalElements] = useState(0);
   const [books, setBooks] = useState([]);
   const [bookmarks, setBookmarks] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
   const tabRef = useRef(null);
   const [tabScrollLeft, setTabScrollLeft] = useState(prevScrollLeft || 0);
@@ -261,7 +261,7 @@ const MyBookListPage = () => {
         </div>
 
         {/* 검색 결과가 없을 때 공지 표시 */}
-        {activeTab !== "책갈피" && totalElements === 0 && (
+        {!loading && activeTab !== "책갈피" && totalElements === 0 && (
           <div className="w-full h-screen flex justify-center items-center">
             {noResult && <ListNotice type={"emptyBook"} />}
             {noSearchResult && <ListNotice type={"noResult"} />}
@@ -275,7 +275,7 @@ const MyBookListPage = () => {
           </div>
         )}
 
-        {activeTab === "책갈피" && totalElements === 0 && (
+        {!loading && activeTab === "책갈피" && totalElements === 0 && (
           <div className="w-full h-screen flex justify-center items-center">
             {noResult && <ListNotice type={"emptyBookMark"} />}
             {noSearchResult && <ListNotice type={"noResult"} />}

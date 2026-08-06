@@ -22,7 +22,7 @@ const MyBookSearchPage = () => {
   const [sort, setSort] = useState("최신순");
   const [data, setDate] = useState({});
   const [books, setBooks] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [openBookmarkModal, setOpenBookmarkModal] = useState(false);
   const [currentBook, setCurrentBook] = useState(null);
 
@@ -133,7 +133,7 @@ const MyBookSearchPage = () => {
           />
         </div>
         {/* 검색 결과가 없을 때 공지 표시 */}
-        {data.totalElements === 0 && (
+        {!loading && data.totalElements === 0 && (
           <div className="w-full h-screen flex justify-center items-center">
             <ListNotice type={"noResult"} />
           </div>

@@ -14,7 +14,6 @@ import { TitleSearch } from "../../layouts/TopLayout";
 
 import HomeBooksList from "../../components/home/HomeBookLIst";
 import TabCondition from "../../components/commons/TabCondition";
-import LoadingPage from "../LoadingPage";
 import LoadingSpinner from "../../components/commons/LoadingSpinner";
 
 import { PiTargetBold, PiHeartFill, PiMedalFill } from "react-icons/pi";
@@ -28,20 +27,20 @@ const HomePage = () => {
   const {
     data: bestSeller = [],
     isLoading: bestLoading,
-    error: bestError,
   } = useQuery({
     queryKey: ["bestSeller"],
     queryFn: getBestSeller,
+    staleTime: 30 * 60 * 1000,
   });
 
   // 카테고리별 추천 쿼리
   const {
     data: categoryBest = {},
     isLoading: categoryLoading,
-    error: categoryError,
   } = useQuery({
     queryKey: ["categoryBest"],
     queryFn: getCategoryBest,
+    staleTime: 10 * 60 * 1000,
   });
 
   // AI 추천 쿼리
@@ -52,10 +51,8 @@ const HomePage = () => {
   } = useQuery({
     queryKey: ["aiRecommend"],
     queryFn: getAIRecommend,
+    staleTime: 30 * 60 * 1000,
   });
-
-  // 응답 빠른 API를 도착 즉시 렌더링하기 위한 변수
-  const otherLoading = bestLoading || categoryLoading;
 
   // 카드 클릭 시 상세 페이지로 이동
   const handleCardClick = (book) => {
@@ -93,10 +90,7 @@ const HomePage = () => {
 
   return (
     <BasicLayout>
-      {otherLoading ? (
-        <LoadingPage />
-      ) : (
-        <div>
+      <div>
           {/* 상단 네비 */}
           <div className="fixed top-0 left-0 w-full z-50 bg-undbgmain">
             <TitleSearch title={"홈"} showLine={true} />
@@ -109,10 +103,17 @@ const HomePage = () => {
                 주간 베스트 셀러
               </p>
             </div>
-            <HomeBooksList
-              books={Array.isArray(bestSeller) ? bestSeller : []}
-              onCardClick={handleCardClick}
-            />
+            {bestLoading ? (
+              <div className="flex h-28 items-center gap-2 text-undtextgray">
+                <LoadingSpinner size="sm" />
+                <span>베스트셀러를 불러오고 있어요.</span>
+              </div>
+            ) : (
+              <HomeBooksList
+                books={Array.isArray(bestSeller) ? bestSeller : []}
+                onCardClick={handleCardClick}
+              />
+            )}
           </div>
           {/* 카테고리 추천 도서 */}
           <div className="pb-10">
@@ -130,7 +131,12 @@ const HomePage = () => {
                 showLine={false}
               />
             </div>
-            {activeTab && (
+            {categoryLoading ? (
+              <div className="flex h-28 items-center gap-2 px-6 text-undtextgray">
+                <LoadingSpinner size="sm" />
+                <span>취향별 추천을 불러오고 있어요.</span>
+              </div>
+            ) : activeTab ? (
               <div className="pl-6">
                 <HomeBooksList
                   books={
@@ -141,7 +147,7 @@ const HomePage = () => {
                   onCardClick={handleCardClick}
                 />
               </div>
-            )}
+            ) : null}
           </div>
           {/* AI 추천 도서 */}
           <div className="pb-20 px-6">
@@ -163,8 +169,7 @@ const HomePage = () => {
               />
             )}
           </div>
-        </div>
-      )}
+      </div>
     </BasicLayout>
   );
 };

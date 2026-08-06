@@ -42,14 +42,13 @@ const SocialBookListPage = () => {
   const [totalElements, setTotalElements] = useState(0);
   const [books, setBooks] = useState([]);
   const [bookmarks, setBookmarks] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false); // 스크롤 상태 관리
   const tabRef = useRef(null);
   const [tabScrollLeft, setTabScrollLeft] = useState(prevScrollLeft || 0);
   const [isBookmarkOpen, setIsBookmarkOpen] = useState(false);
   const [activeBookmark, setActiveBookmark] = useState({});
-  const searchUserList = location?.state?.searchUserList; // state와 socialList 안전하게 접근
   const { state } = location; // 기존 검색 상태
   const [socialProfile, setSocialProfile] = useState([]); // 유저 소셜 프로필 정보 상태
   const [myself, setMyself] = useState(false);
@@ -128,19 +127,6 @@ const SocialBookListPage = () => {
     } catch (error) {
       console.error(error, "소셜 정보를 불러오는 데 실패하였습니다");
       return error;
-    }
-  };
-
-  // 팔로우 상태 변경 API 호출
-  const fetchPatchFollow = async (targetMemberId) => {
-    try {
-      const response = await patchFollow(targetMemberId);
-      console.log("*****팔로우 patchFollow :", response.data);
-
-      // 팔로우/언팔로우 후 최신 프로필 정보 업데이트
-      await fetchSocialInfo();
-    } catch (error) {
-      console.error("팔로우 상태를 변경하는 데 실패하였습니다:", error);
     }
   };
 
@@ -407,7 +393,7 @@ const SocialBookListPage = () => {
         </div>
 
         {/* 검색 결과가 없을 때 공지 표시 */}
-        {activeTab !== "책갈피" && totalElements === 0 && (
+        {!loading && activeTab !== "책갈피" && totalElements === 0 && (
           <div className="w-full h-screen flex flex-col justify-center items-center">
             <div className="h-80"></div>
             {noResult && <ListNotice type={"emptyBook"} />}
@@ -435,7 +421,7 @@ const SocialBookListPage = () => {
           </>
         )}
 
-        {activeTab === "책갈피" && totalElements === 0 && (
+        {!loading && activeTab === "책갈피" && totalElements === 0 && (
           <div className="w-full h-screen flex flex-col justify-center items-center">
             <div className="h-80"></div>
             {noResult && <ListNotice type={"emptyBookMark"} />}
